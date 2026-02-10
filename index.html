@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HealthTech Early Risk Predictor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --primary: #2563eb;
+        --primary-soft: #dbeafe;
+        --bg: #0f172a;
+        --card: #020617;
+        --border: #1e293b;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --danger: #f97373;
+        --success: #4ade80;
+        --warning: #facc15;
+        --radius-lg: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, #1d283a, #020617 60%);
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .shell {
+        max-width: 1120px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        gap: 28px;
+        align-items: stretch;
+      }
+
+      @media (max-width: 900px) {
+        .shell {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .card {
+        background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), #020617);
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        padding: 24px 24px 20px;
+        backdrop-filter: blur(18px);
+        box-shadow: 0 22px 60px rgba(15, 23, 42, 0.8);
+      }
+
+      .card + .card {
+        background: linear-gradient(145deg, #020617, #020617 40%, #020617);
+      }
+
+      h1 {
+        font-size: 1.9rem;
+        margin: 0 0 4px;
+        letter-spacing: 0.02em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(56, 189, 248, 0.7);
+        background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.23), transparent);
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #e0f2fe;
+      }
+
+      .subtitle {
+        margin: 4px 0 18px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        max-width: 38rem;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 16px;
+      }
+
+      @media (max-width: 600px) {
+        .form-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      label {
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      input,
+      select {
+        background: rgba(15, 23, 42, 0.92);
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        padding: 9px 13px;
+        color: var(--text);
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: rgba(59, 130, 246, 0.9);
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4);
+        background: rgba(15, 23, 42, 1);
+      }
+
+      input::placeholder {
+        color: rgba(148, 163, 184, 0.7);
+      }
+
+      .helper {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .actions {
+        display: flex;
+        margin-top: 16px;
+        gap: 10px;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: white;
+        box-shadow: 0 8px 26px rgba(37, 99, 235, 0.65);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.03);
+        box-shadow: 0 12px 32px rgba(37, 99, 235, 0.75);
+      }
+
+      button:active {
+        transform: translateY(1px) scale(0.99);
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.9);
+      }
+
+      button[disabled] {
+        opacity: 0.75;
+        cursor: default;
+        box-shadow: none;
+      }
+
+      .status {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .status-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        margin-right: 4px;
+        background: #22c55e;
+      }
+
+      .status-dot.offline {
+        background: #f97373;
+      }
+
+      .metric-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .risk-pill {
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .risk-pill.low {
+        background: rgba(22, 163, 74, 0.16);
+        border: 1px solid rgba(74, 222, 128, 0.8);
+        color: #bbf7d0;
+      }
+
+      .risk-pill.moderate {
+        background: rgba(234, 179, 8, 0.15);
+        border: 1px solid rgba(250, 204, 21, 0.9);
+        color: #fef9c3;
+      }
+
+      .risk-pill.high {
+        background: rgba(220, 38, 38, 0.16);
+        border: 1px solid rgba(248, 113, 113, 0.9);
+        color: #fee2e2;
+      }
+
+      .prob-display {
+        font-size: 2.4rem;
+        font-weight: 700;
+      }
+
+      .prob-display span {
+        font-size: 1.1rem;
+        color: var(--muted);
+        font-weight: 400;
+        margin-left: 4px;
+      }
+
+      .bar-shell {
+        margin-top: 14px;
+        background: rgba(15, 23, 42, 1);
+        border-radius: 999px;
+        height: 10px;
+        overflow: hidden;
+        border: 1px solid rgba(30, 64, 175, 0.7);
+      }
+
+      .bar-inner {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+        transition: width 0.35s ease-out;
+      }
+
+      .recommendation {
+        margin-top: 14px;
+        font-size: 0.86rem;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 14px;
+      }
+
+      .chip {
+        font-size: 0.72rem;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px dashed rgba(148, 163, 184, 0.5);
+        color: var(--muted);
+      }
+
+      .banner {
+        margin-top: 16px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        font-size: 0.78rem;
+        color: var(--muted);
+        background: rgba(15, 23, 42, 0.9);
+      }
+
+      .banner strong {
+        color: #e5e7eb;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="shell">
+      <section class="card">
+        <div class="pill">
+          <span>HealthTech</span>
+          <span>AI Early-Risk Triage</span>
+        </div>
+        <h1>
+          Healthcare Risk Predictor
+        </h1>
+        <p class="subtitle">
+          Prototype web app that uses an AI model to triage early cardiovascular-like risk from basic patient data.
+          This is for educational and hackathon use only &mdash; not a clinical tool.
+        </p>
+
+        <form id="risk-form">
+          <div class="form-grid">
+            <div class="field">
+              <label for="age">Age</label>
+              <input id="age" name="age" type="number" min="18" max="100" placeholder="e.g. 54" required />
+              <span class="helper">Years</span>
+            </div>
+
+            <div class="field">
+              <label for="sex">Sex</label>
+              <select id="sex" name="sex" required>
+                <option value="">Select...</option>
+                <option value="0">Female</option>
+                <option value="1">Male</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="bmi">BMI</label>
+              <input id="bmi" name="bmi" type="number" step="0.1" min="10" max="60" placeholder="e.g. 29.4" required />
+              <span class="helper">Body Mass Index</span>
+            </div>
+
+            <div class="field">
+              <label for="systolic_bp">Systolic BP</label>
+              <input
+                id="systolic_bp"
+                name="systolic_bp"
+                type="number"
+                min="80"
+                max="250"
+                placeholder="e.g. 138"
+                required
+              />
+              <span class="helper">mmHg</span>
+            </div>
+
+            <div class="field">
+              <label for="diastolic_bp">Diastolic BP</label>
+              <input
+                id="diastolic_bp"
+                name="diastolic_bp"
+                type="number"
+                min="40"
+                max="150"
+                placeholder="e.g. 86"
+                required
+              />
+              <span class="helper">mmHg</span>
+            </div>
+
+            <div class="field">
+              <label for="cholesterol">Cholesterol</label>
+              <input
+                id="cholesterol"
+                name="cholesterol"
+                type="number"
+                min="80"
+                max="400"
+                placeholder="e.g. 210"
+                required
+              />
+              <span class="helper">Total, mg/dL</span>
+            </div>
+
+            <div class="field">
+              <label for="smoker">Smoker</label>
+              <select id="smoker" name="smoker" required>
+                <option value="">Select...</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="family_history">Family history</label>
+              <select id="family_history" name="family_history" required>
+                <option value="">Select...</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="exercise_level">Exercise level</label>
+              <select id="exercise_level" name="exercise_level" required>
+                <option value="">Select...</option>
+                <option value="0">Low</option>
+                <option value="1">Moderate</option>
+                <option value="2">High</option>
+              </select>
+              <span class="helper">Typical weekly activity</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="submit-btn" type="submit">
+              <span>Run AI Prediction</span>
+            </button>
+            <div class="status" id="status">
+              <span class="status-dot offline" id="status-dot"></span>
+              <span id="status-text">Checking backend...</span>
+            </div>
+          </div>
+        </form>
+
+        <div class="banner">
+          <strong>Disclaimer:</strong> This demo uses synthetic training data and a simple model. It is <strong>not</strong>
+          reviewed by clinicians and must not be used for diagnosis or treatment decisions.
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="metric-header">
+          <div>
+            <div class="pill" style="border-color: rgba(129, 140, 248, 0.9); background: transparent">
+              Model Output
+            </div>
+          </div>
+          <div id="risk-pill" class="risk-pill low" style="display: none">
+            <span id="risk-pill-label">Low risk</span>
+          </div>
+        </div>
+
+        <div class="prob-display" id="prob-display">
+          -- <span>% estimated 1-year risk</span>
+        </div>
+
+        <div class="bar-shell">
+          <div class="bar-inner" id="bar-inner"></div>
+        </div>
+
+        <div class="recommendation" id="recommendation">
+          Submit a patient profile to see the model&apos;s estimated early risk and tailored lifestyle / follow-up
+          suggestion.
+        </div>
+
+        <div class="chips">
+          <div class="chip">Inputs: age, BMI, blood pressure, cholesterol</div>
+          <div class="chip">Lifestyle: smoking, exercise, family history</div>
+          <div class="chip">AI risk triage (demo)</div>
+          <div class="chip">Use only for education / prototyping</div>
+        </div>
+
+        <div
+          id="emergency-panel"
+          style="
+            margin-top: 16px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(248, 113, 113, 0.7);
+            background: rgba(127, 29, 29, 0.7);
+            color: #fee2e2;
+            font-size: 0.82rem;
+            display: none;
+          "
+        >
+          <div style="font-weight: 600; margin-bottom: 6px">
+            High‑risk alert &mdash; contact support person.
+          </div>
+          <div style="margin-bottom: 6px">
+            This browser demo can prepare a call or message to your saved emergency contact and attach your current
+            location link. You still need to confirm the call/message on your device.
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px">
+            <input
+              id="contact-phone"
+              type="tel"
+              placeholder="Emergency phone number"
+              style="
+                flex: 1 1 180px;
+                min-width: 0;
+                border-radius: 999px;
+                border: 1px solid rgba(254, 202, 202, 0.9);
+                padding: 6px 10px;
+                background: rgba(15, 23, 42, 0.9);
+                color: #fee2e2;
+                font-size: 0.8rem;
+              "
+            />
+            <button id="save-contact-btn" type="button" style="background: rgba(248, 250, 252, 0.08); box-shadow: none">
+              Save contact
+            </button>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <button id="call-contact-btn" type="button">Call saved contact</button>
+            <button id="share-location-btn" type="button" style="background: linear-gradient(135deg, #16a34a, #22c55e)">
+              Share live location (SMS / WhatsApp)
+            </button>
+          </div>
+          <div id="emergency-msg" style="margin-top: 6px; font-size: 0.75rem; color: #fecaca"></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // FRONTEND-ONLY VERSION (no server needed)
+      const form = document.getElementById("risk-form");
+      const submitBtn = document.getElementById("submit-btn");
+      const statusText = document.getElementById("status-text");
+      const statusDot = document.getElementById("status-dot");
+      const probDisplay = document.getElementById("prob-display");
+      const barInner = document.getElementById("bar-inner");
+      const recommendationEl = document.getElementById("recommendation");
+      const riskPill = document.getElementById("risk-pill");
+      const riskPillLabel = document.getElementById("risk-pill-label");
+      const emergencyPanel = document.getElementById("emergency-panel");
+      const emergencyMsg = document.getElementById("emergency-msg");
+      const contactPhoneInput = document.getElementById("contact-phone");
+      const saveContactBtn = document.getElementById("save-contact-btn");
+      const callContactBtn = document.getElementById("call-contact-btn");
+      const shareLocationBtn = document.getElementById("share-location-btn");
+      const historyList = document.createElement("div");
+      historyList.style.marginTop = "16px";
+      historyList.style.fontSize = "0.8rem";
+      historyList.style.color = "#9ca3af";
+
+      const EMERGENCY_HARD_CODED = "8088031318";
+
+      statusDot.classList.remove("offline");
+      statusText.textContent = "Running locally (no server needed)";
+
+      // Load saved emergency contact if available
+      const savedPhone = window.localStorage.getItem("emergency_phone");
+      if (savedPhone) {
+        contactPhoneInput.value = savedPhone;
+      }
+
+      recommendationEl.insertAdjacentElement("afterend", historyList);
+
+      function pushToHistory(probPct, category) {
+        const ts = new Date().toLocaleTimeString();
+        const line = document.createElement("div");
+        line.textContent = `[${ts}] ${probPct}% – ${category} risk`;
+        historyList.prepend(line);
+
+        while (historyList.children.length > 5) {
+          historyList.removeChild(historyList.lastChild);
+        }
+      }
+
+      function setLoading(isLoading) {
+        submitBtn.disabled = isLoading;
+        submitBtn.textContent = isLoading ? "Running model..." : "Run AI Prediction";
+      }
+
+      function computeRisk(payload) {
+        const {
+          age,
+          sex,
+          bmi,
+          systolic_bp,
+          diastolic_bp,
+          cholesterol,
+          smoker,
+          family_history,
+          exercise_level,
+        } = payload;
+
+        let score =
+          0.03 * (age - 40) +
+          0.06 * (bmi - 25) +
+          0.02 * (systolic_bp - 120) +
+          0.015 * ((cholesterol - 180) / 10) +
+          0.5 * smoker +
+          0.4 * family_history -
+          0.25 * exercise_level +
+          0.2 * sex;
+
+        const prob = 1 / (1 + Math.exp(-score / 4));
+
+        let category;
+        let recommendation;
+
+        if (prob < 0.25) {
+          category = "Low";
+          recommendation =
+            "Estimated low early risk. Maintain healthy lifestyle, regular activity, and periodic check-ups.";
+        } else if (prob < 0.55) {
+          category = "Moderate";
+          recommendation =
+            "Moderate estimated risk. Consider optimizing diet and exercise and discussing prevention with a clinician.";
+        } else {
+          category = "High";
+          recommendation =
+            "High estimated risk. Recommend scheduling a detailed medical review and cardiovascular assessment.";
+        }
+
+        return {
+          risk_probability: prob,
+          risk_category: category,
+          recommendation,
+        };
+      }
+
+      function updateOutput(data) {
+        const probPct = Math.round(data.risk_probability * 100);
+        probDisplay.innerHTML = probPct + '<span>% estimated 1-year risk</span>';
+        barInner.style.width = probPct + "%";
+
+        let cls = "low";
+        let label = "Low estimated risk";
+        if (data.risk_category.toLowerCase() === "moderate") {
+          cls = "moderate";
+          label = "Moderate estimated risk";
+        } else if (data.risk_category.toLowerCase() === "high") {
+          cls = "high";
+          label = "High estimated risk";
+        }
+
+        riskPill.style.display = "inline-flex";
+        riskPill.classList.remove("low", "moderate", "high");
+        riskPill.classList.add(cls);
+        riskPillLabel.textContent = label;
+
+        recommendationEl.textContent = data.recommendation;
+        pushToHistory(probPct, data.risk_category);
+
+        // If high risk, reveal emergency panel and try to start a call
+        if (data.risk_category.toLowerCase() === "high") {
+          emergencyPanel.style.display = "block";
+          emergencyMsg.textContent =
+            "High‑risk pattern detected. Your device will now try to start a call to the configured emergency number.";
+
+          // Ensure the hard-coded number is set and saved
+          if (!contactPhoneInput.value.trim()) {
+            contactPhoneInput.value = EMERGENCY_HARD_CODED;
+            window.localStorage.setItem(
+              "emergency_phone",
+              EMERGENCY_HARD_CODED
+            );
+          }
+
+          // Trigger dialer for the hard-coded number (user still has to confirm the call)
+          try {
+            window.location.href = `tel:${encodeURIComponent(
+              EMERGENCY_HARD_CODED
+            )}`;
+          } catch (e) {
+            console.error(e);
+            emergencyMsg.textContent =
+              "Could not open the dialer automatically. Please call 8088031318 or your local emergency number.";
+          }
+        }
+      }
+
+      const presets = [
+        {
+          label: "Low-risk profile",
+          values: {
+            age: 32,
+            sex: 0,
+            bmi: 22.5,
+            systolic_bp: 112,
+            diastolic_bp: 72,
+            cholesterol: 170,
+            smoker: 0,
+            family_history: 0,
+            exercise_level: 2,
+          },
+        },
+        {
+          label: "Moderate-risk profile",
+          values: {
+            age: 48,
+            sex: 1,
+            bmi: 28.3,
+            systolic_bp: 132,
+            diastolic_bp: 84,
+            cholesterol: 205,
+            smoker: 0,
+            family_history: 1,
+            exercise_level: 1,
+          },
+        },
+        {
+          label: "High-risk profile",
+          values: {
+            age: 63,
+            sex: 1,
+            bmi: 33.8,
+            systolic_bp: 158,
+            diastolic_bp: 96,
+            cholesterol: 245,
+            smoker: 1,
+            family_history: 1,
+            exercise_level: 0,
+          },
+        },
+      ];
+
+      const actions = document.querySelector(".actions");
+      const presetsContainer = document.createElement("div");
+      presetsContainer.style.display = "flex";
+      presetsContainer.style.flexWrap = "wrap";
+      presetsContainer.style.gap = "6px";
+      presetsContainer.style.marginTop = "8px";
+
+      presets.forEach((preset) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = preset.label;
+        btn.style.background = "rgba(15,23,42,0.95)";
+        btn.style.color = "#e5e7eb";
+        btn.style.boxShadow = "none";
+        btn.style.border = "1px solid rgba(148,163,184,0.5)";
+        btn.style.fontSize = "0.75rem";
+        btn.style.padding = "6px 10px";
+        btn.style.textTransform = "none";
+        btn.style.letterSpacing = "0";
+        btn.addEventListener("click", () => {
+          Object.entries(preset.values).forEach(([key, value]) => {
+            const el = document.getElementById(key);
+            if (el) el.value = String(value);
+          });
+        });
+        presetsContainer.appendChild(btn);
+      });
+
+      actions.insertAdjacentElement("afterend", presetsContainer);
+
+      saveContactBtn.addEventListener("click", () => {
+        const phone = contactPhoneInput.value.trim();
+        if (!phone) {
+          emergencyMsg.textContent = "Enter a phone number before saving.";
+          return;
+        }
+        window.localStorage.setItem("emergency_phone", phone);
+        emergencyMsg.textContent = "Emergency contact saved on this device.";
+      });
+
+      callContactBtn.addEventListener("click", () => {
+        const phone = (contactPhoneInput.value || "").trim();
+        if (!phone) {
+          emergencyMsg.textContent = "No phone number set. Enter and save a contact first.";
+          return;
+        }
+        // This triggers the system dialer on phones; on desktop it may open a calling app.
+        window.location.href = `tel:${encodeURIComponent(phone)}`;
+      });
+
+      shareLocationBtn.addEventListener("click", () => {
+        const phone = window.localStorage.getItem("emergency_phone") || "";
+
+        if (!navigator.geolocation) {
+          emergencyMsg.textContent =
+            "Geolocation is not available in this browser. You can still call your saved contact.";
+          return;
+        }
+
+        emergencyMsg.textContent = "Requesting live location from your browser...";
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            const text =
+              "This is my current location. Please check on me: " + mapsUrl;
+
+            // Try to open SMS protocol (on phones) with prefilled body
+            const smsUrl = `sms:${encodeURIComponent(
+              phone
+            )}?&body=${encodeURIComponent(text)}`;
+            window.location.href = smsUrl;
+
+            emergencyMsg.textContent =
+              "Location captured. Your SMS / messaging app should open with a prefilled message.";
+          },
+          (err) => {
+            console.error(err);
+            emergencyMsg.textContent =
+              "Could not access location (permission denied or unavailable). Please contact your support person manually.";
+          }
+        );
+      });
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        const payload = {
+          age: Number(formData.get("age")),
+          sex: Number(formData.get("sex")),
+          bmi: Number(formData.get("bmi")),
+          systolic_bp: Number(formData.get("systolic_bp")),
+          diastolic_bp: Number(formData.get("diastolic_bp")),
+          cholesterol: Number(formData.get("cholesterol")),
+          smoker: Number(formData.get("smoker")),
+          family_history: Number(formData.get("family_history")),
+          exercise_level: Number(formData.get("exercise_level")),
+        };
+
+        setLoading(true);
+        try {
+          const data = computeRisk(payload);
+          updateOutput(data);
+        } finally {
+          setLoading(false);
+        }
+      });
+    </script>
+  </body>
+</html>
+
